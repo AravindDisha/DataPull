@@ -1,5 +1,5 @@
 Flask==2.0.2
-matplotlib==3.6.0
+matplotlib>=3.5.0
 numpy==1.23.3
 pandas==1.5.0
 pytangle==0.0.2
