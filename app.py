@@ -16,7 +16,7 @@ path_to_twit_keys_yaml = './files/twitter_keys.yaml'
 path_to_keywords_yaml = "./files/keywords.yaml"
 path_to_new_extractions = "/PulledData/data_{sm_type}_{from_date}_{to_date}.pkl"
 # comment this before pushing
-path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl"
+# path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl"
 
 app = Flask(__name__)
 
@@ -26,15 +26,9 @@ def index():
     print('Request for index page received')
     return render_template('index.html')
 
-
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
-
 @app.route('/fetch', methods=['POST'])
 def fetch():
+    print('Request for data fetch received')
     extraction_type = request.form.get('extraction_type')
     start_date = request.form.get('start_date')
     end_date = request.form.get('end_date')
@@ -56,13 +50,13 @@ def fetch():
 def collect_tweets_keyword():
     # collecting args of GET request to get start and end dates of tweets to be collected
     dates = request.args.to_dict()
-    if 'end_date' in dates.keys():
+    if 'end_date' in dates.keys() and dates['end_date']!= '':
         # edit according to incoming format
         end_date = datetime.strptime(dates['end_date'], '%Y-%m-%d').date()
     else:
         end_date = datetime.now()
 
-    if 'start_date' in dates.keys():
+    if 'start_date' in dates.keys() and dates['start_date']!= '':
         # edit according to incoming format
         start_date = datetime.strptime(dates['start_date'], '%Y-%m-%d').date()
     else:
