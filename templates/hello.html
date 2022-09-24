@@ -20,17 +20,17 @@
     }
   </style>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script>
-      $(document).ready(function(){
-        var output = document.getElementById('output');
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '{{ url_for_extraction }}', true); // add args here
-        xhr.send();
-        setInterval(function() {
-          output.innerHTML = xhr.responseText;
-        }, 500);
-      });
-    </script>
+  <script>
+    $(document).ready(function () {
+      var output = document.getElementById('output');
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '{{ url_for_extraction }}', true);
+      xhr.send();
+      setInterval(function () {
+        output.innerHTML = xhr.responseText;
+      }, 500);
+    });
+  </script>
 </head>
 <html>
 
