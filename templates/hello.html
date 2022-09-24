@@ -1,21 +1,52 @@
 <!doctype html>
+
 <head>
-    <title>Hello Azure - Python Quickstart</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <title>Extracting...</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <style>
+    .logging_window {
+      display: block;
+      padding: 9.5px;
+      font-size: 13px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 50%;
+      margin: auto;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script>
+      $(document).ready(function(){
+        var output = document.getElementById('output');
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '{{ url_for_extraction }}', true); // add args here
+        xhr.send();
+        setInterval(function() {
+          output.innerHTML = xhr.responseText;
+        }, 500);
+      });
+    </script>
 </head>
 <html>
-   <body>
-     <main>
-        <div class="px-4 py-3 my-2 text-center">
-            <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='images/azure-icon.svg') }}" alt="Azure Logo" width="192" height="192"/>
-            <!-- <img  src="/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
-            <h1 class="display-6 fw-bold">Hello {{name}}</h1>
-            <p class="fs-5">
-                It is nice to meet you!
-            </p>
-            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>
-          </div>
-     </main>      
-   </body>
+
+<body>
+  <main>
+    <div class="px-4 py-3 my-2 text-center">
+      <h1 class="display-6 fw-bold">Hi! We are extracting {{etype}} from {{sdate}} to {{edate}} </h1>
+      <p class="fs-5">
+        It is nice to meet you!
+      </p>
+      <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>
+    </div>
+    <div class="logging_window">
+      <pre id="output"></pre>
+    </div>
+  </main>
+</body>
+
 </html>
