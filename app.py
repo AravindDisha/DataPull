@@ -48,6 +48,10 @@ def fetch():
 
         if (extraction_type == 'tweet_keyword'):
             url_for_extraction = url_for('collect_tweets_keyword',start_date=start_date,end_date=end_date)
+        elif (extraction_type == 'insta_post'):
+            url_for_extraction = url_for('collect_insta_keyword',start_date=start_date,end_date=end_date)
+        elif (extraction_type == 'fb_post'):
+            url_for_extraction = url_for('collect_facebook_keyword',start_date=start_date,end_date=end_date)
         return render_template('hello.html', etype=extraction_type, sdate=start_date, edate=end_date, url_for_extraction=url_for_extraction)
     else:
         print('Request for extraction invalid -- redirecting')
@@ -60,7 +64,7 @@ def collect_tweets_keyword():
     args = request.args
     end_date = datetime.strptime(args.get('amp;end_date'), "%Y-%m-%d") # amp; is a temporary fix due to string conversion errors
     start_date = datetime.strptime(args.get('start_date'), "%Y-%m-%d")
-    print('Extraction of tweet by keyword from started')
+    print('Extraction of tweet by keyword started')
 
     # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
     # naming for file to store extraction from a certain date to a certain date
@@ -85,6 +89,74 @@ def collect_tweets_keyword():
             from_date=start_date.strftime("%m/%d/%Y, %H:%M:%S"), to_date=end_date.strftime("%m/%d/%Y, %H:%M:%S"), fname=path_to_storage_file)
         print(success_str)
         return '<h3>'+success_str+'</h3><br/>'+(twit_df.sample(5)[["author", "platform", "content"]]).to_html()
+
+
+@app.route('/fetchInstaPosts', methods=['GET'])
+def collect_insta_keyword():
+    # collecting args of GET request to get start and end dates of tweets to be collected
+    args = request.args
+    end_date = datetime.strptime(args.get('amp;end_date'), "%Y-%m-%d") # amp; is a temporary fix due to string conversion errors
+    start_date = datetime.strptime(args.get('start_date'), "%Y-%m-%d")
+    print('Extraction of insta post by keyword started')
+
+    # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
+    # naming for file to store extraction from a certain date to a certain date
+    path_to_storage_file = path_to_new_extractions.format(
+        sm_type="insta_post", from_date=start_date.timestamp(), to_date=end_date.timestamp())
+    insta_df = None
+    try:
+        insta_df = get_insta_posts(
+            path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_date)
+        f = open(path_to_storage_file, 'wb')
+        pickle.dump(insta_df, f)
+        f.close()
+    except:
+        tb = traceback.format_exc()
+        error_str = 'Insta Post Fetch failed with error \n{tb}\n'.format(
+            tb=tb)
+        # find if the file was accidentally half-made and delete
+        print(error_str)
+        return error_str
+    else:
+        success_str = 'Wrote insta post extraction from {from_date} to {to_date} in {fname}'.format(
+            from_date=start_date.strftime("%m/%d/%Y, %H:%M:%S"), to_date=end_date.strftime("%m/%d/%Y, %H:%M:%S"), fname=path_to_storage_file)
+        print(success_str)
+        return '<h3>'+success_str+'</h3><br/>'+(insta_df.sample(5)[["author", "platform", "content"]]).to_html()
+
+
+
+@app.route('/fetchFacebookPosts', methods=['GET'])
+def collect_facebook_keyword():
+    # collecting args of GET request to get start and end dates of tweets to be collected
+    args = request.args
+    end_date = datetime.strptime(args.get('amp;end_date'), "%Y-%m-%d") # amp; is a temporary fix due to string conversion errors
+    start_date = datetime.strptime(args.get('start_date'), "%Y-%m-%d")
+    print('Extraction of facebook post by keyword started')
+
+    # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
+    # naming for file to store extraction from a certain date to a certain date
+    path_to_storage_file = path_to_new_extractions.format(
+        sm_type="fb_post", from_date=start_date.timestamp(), to_date=end_date.timestamp())
+    fb_df = None
+    try:
+        fb_df = get_insta_posts(
+            path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_date)
+        f = open(path_to_storage_file, 'wb')
+        pickle.dump(fb_df, f)
+        f.close()
+    except:
+        tb = traceback.format_exc()
+        error_str = 'Facebook Post Fetch failed with error \n{tb}\n'.format(
+            tb=tb)
+        # find if the file was accidentally half-made and delete
+        print(error_str)
+        return error_str
+    else:
+        success_str = 'Wrote facebook post extraction from {from_date} to {to_date} in {fname}'.format(
+            from_date=start_date.strftime("%m/%d/%Y, %H:%M:%S"), to_date=end_date.strftime("%m/%d/%Y, %H:%M:%S"), fname=path_to_storage_file)
+        print(success_str)
+        return '<h3>'+success_str+'</h3><br/>'+(fb_df.sample(5)[["author", "platform", "content"]]).to_html()
+
 
 
 if __name__ == '__main__':
