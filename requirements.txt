@@ -9,3 +9,4 @@ requests>=2.0.0
 requests_oauthlib>=1.0.0
 seaborn>=0.1.0
 tweepy>=4.0.0
+exportcomments>=0.0.1
