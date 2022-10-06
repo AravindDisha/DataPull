@@ -49,7 +49,7 @@ def fetch():
         if (end_date == ''):
             end_date = datetime.now().strftime("%Y-%m-%d")
         if (start_date == ''):
-            start_date = (datetime.now() - relativedelta(days=7) #change days to 7 before uploading
+            start_date = (datetime.now() - relativedelta(days=7) # change days to 7 before uploading
                           ).strftime("%Y-%m-%d")
 
         if (extraction_type == 'tweet_keyword'):
@@ -211,14 +211,14 @@ def collect_comments_post(sm_df,start_date,end_date):
     i = 0
     while i < sm_df.shape[0]:
         print("comment pull number "+str(i))
-        comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+100], path_to_exportcomments_keys)
-        f = open(path_to_pre_comment_extractions.format(sm_type="sm_post_"+str(int(i/100)+1), from_date=start_date.timestamp(), to_date=end_date.timestamp()), 'wb')
+        comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+60], path_to_exportcomments_keys)
+        f = open(path_to_pre_comment_extractions.format(sm_type="sm_post_"+str(int(i/60)+1), from_date=start_date.timestamp(), to_date=end_date.timestamp()), 'wb')
         pickle.dump(comments_output[0],f)
         f.close()
         f1 = open(path_to_pre_comment_extractions.format(sm_type="comment_post_"+str(int(i/100)+1), from_date=start_date.timestamp(), to_date=end_date.timestamp()), 'wb')
         pickle.dump(comments_output[1],f1)
         f1.close()
-        i+=100
+        i+=60
 
 if __name__ == '__main__':
     app.run()
