@@ -102,7 +102,7 @@ def create_comment_exports(posts_df, ex_keys):
         
         # Just for a status update - print for every 50th post's comment fetched
         p = p + 1
-        if p % 50 == 0:
+        if p % 10 == 0:
             print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + str(i) + ", time: " + str(time.time() - start))
 
         # While there is no export made yet - try and create the export:
@@ -178,7 +178,7 @@ def get_comment_exports(comments_exports, ex_keys):
         
         # Just for a status update - print for every 50th post's comment fetched
         p = p + 1
-        if p % 50 == 0:
+        if p % 10 == 0:
             print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + str(i) + ", time: " + str(time.time() - start))
 
         # Check the export status: "For each run, you may make at most 25 calls during the first 5 minutes after the export started." = 12 seconds per request
