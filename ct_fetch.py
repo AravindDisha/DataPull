@@ -1,4 +1,5 @@
 import requests
+import traceback
 from requests_oauthlib import OAuth1Session
 from pytangle.api import API
 
@@ -136,7 +137,10 @@ def parse_ct_post(raw_post, topic_dict, account_with_lists):
     except Exception:
         labels = []
         print("something happened")
-        print(raw_post)
+        tb = traceback.format_exc()
+        error_str = 'Facebook fetch failed with error \n{tb}\n for'.format(tb=tb)
+        # find if the file was accidentally half-made and delete
+        print(error_str + raw_post)
     return {
         "author": author,
         "url": raw_post["postUrl"],
