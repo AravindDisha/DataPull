@@ -140,7 +140,7 @@ def parse_ct_post(raw_post, topic_dict, account_with_lists):
         tb = traceback.format_exc()
         error_str = 'Facebook fetch failed with error \n{tb}\n for'.format(tb=tb)
         # find if the file was accidentally half-made and delete
-        print(error_str + raw_post)
+        print(str(error_str) + str(raw_post))
     return {
         "author": author,
         "url": raw_post["postUrl"],
