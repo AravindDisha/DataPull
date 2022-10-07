@@ -37,9 +37,9 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     # Create comment exports
     comments_exports = create_comment_exports(posts_df_fb_ig, ex_keys)
     
-    print()
-    print('=====')
-    print()
+    # print()
+    # print('=====')
+    # print()
     
     # Get the export data
     comments_results = get_comment_exports(comments_exports, ex_keys)
@@ -85,7 +85,7 @@ def create_comment_exports(posts_df, ex_keys):
     # Instantiate the client Using your API key
     ex = ExportComments(ex_keys['exportcomments']['token'])
     
-    print("STARTING: CREATE COMMENT EXPORTS")
+    print("[exportcomments_fetch] Starting: Create comment export")
     
     # Get start time
     start = time.time()
@@ -103,7 +103,7 @@ def create_comment_exports(posts_df, ex_keys):
         # Just for a status update - print for every 50th post's comment fetched
         p = p + 1
         if p % 50 == 0:
-            print("Post #: " + str(p) + ", Post index: " + str(i) + ", Time: " + str(time.time() - start))
+            print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + str(i) + ", time: " + str(time.time() - start))
 
         # While there is no export made yet - try and create the export:
         export_made = False
@@ -117,9 +117,9 @@ def create_comment_exports(posts_df, ex_keys):
 
             # Check API return code for error
             if r_export.body['code'] != 200:
-                print(i) # print post index for debugging
-                print(post['url']) # print post URL for debugging
-                print(r_export.body)
+                print('[exportcomments_fetch] post !200 '+ str(i)) # print post index for debugging
+                # print(post['url']) # print post URL for debugging
+                # print(r_export.body)
                 break
 
             # Check for successful export creation
@@ -134,21 +134,18 @@ def create_comment_exports(posts_df, ex_keys):
                     time.sleep(r_export.body['data']['seconds_to_wait'])
                     continue # try again to make export
                 else:
-                    print(i) # print post index for debugging
-                    print(post['url']) # print post URL for debugging
-                    print(r_export.body)
+                    print('[exportcomments_fetch] post unsuccessful post '+ str(i)) # print post index for debugging
+                    # print(post['url']) # print post URL for debugging
+                    # print(r_export.body)
                     break
 
         # Store the export info
         if export_made == True:
             comments_exports[i] = r_export.body
 
-    print()
-    print("Posts gone through:")
-    print(len(comments_exports))
-    print("Time taken:")
-    print(time.time() - start)
-    
+    # print()
+    print("[exportcomments_fetch] posts gone through:"+ str(len(comments_exports)))
+    print("[exportcomments_fetch] time taken:"+ str(time.time() - start))
     return comments_exports
 
 # Inputs:
@@ -164,7 +161,7 @@ def get_comment_exports(comments_exports, ex_keys):
     # Instantiate the client Using your API key
     ex = ExportComments(ex_keys['exportcomments']['token'])
     
-    print("STARTING: GET COMMENT EXPORTS")
+    print("[exportcomments_fetch] Starting: Get comment exports")
 
     # Get start time
     start = time.time()
@@ -182,7 +179,7 @@ def get_comment_exports(comments_exports, ex_keys):
         # Just for a status update - print for every 50th post's comment fetched
         p = p + 1
         if p % 50 == 0:
-            print("Post #: " + str(p) + ", Post index: " + str(i) + ", Time: " + str(time.time() - start))
+            print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + str(i) + ", time: " + str(time.time() - start))
 
         # Check the export status: "For each run, you may make at most 25 calls during the first 5 minutes after the export started." = 12 seconds per request
         export_status = "not started"
@@ -194,9 +191,9 @@ def get_comment_exports(comments_exports, ex_keys):
             if export_status == "error":
                 # Print out post export info for debugging, if it's not a "no comments found" situation
                 if not r_check.body['data'][0]['error'].startswith("No comments"):
-                    print(i) # print post index for debugging
-                    print(r_export['data']['url']) # print post URL for debugging
-                    print(r_check.body)
+                    print("[exportcomments_fetch] no comments for " + str(i)) # print post index for debugging
+                    # print(r_export['data']['url']) # print post URL for debugging
+                    # print(r_check.body)
                 break
             if export_status != "done":
                 time.sleep(12)
@@ -210,10 +207,5 @@ def get_comment_exports(comments_exports, ex_keys):
             # Add to results dict
             comments_results[i] = json.loads(result)
 
-    print()
-    print("Comment exports gone through:")
-    print(len(comments_exports))
-    print("Time taken:")
-    print(time.time() - start)
-    
+    print("[exportcomments_fetch] comment exports gone through:" + str(len(comments_exports)) + ", time taken:" + str(time.time() - start))
     return comments_results

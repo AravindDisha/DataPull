@@ -64,8 +64,8 @@ def get_insta_posts(path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end
     ig_posts = []
     for n, a_post in enumerate(ig_posts_pull):
         # Progress check print-out
-        if not n % 1000:
-            print(n)
+        # if not n % 1000:
+        #     print(n)
         # Add post to list
         ig_posts.append(parse_ct_post(a_post, keywords['COVID_TOPICS'], accounts))
     return pd.DataFrame(ig_posts)
@@ -102,8 +102,8 @@ def get_fb_posts(path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_da
     fb_posts = []
     for n, a_post in enumerate(fb_posts_pull):
         # Progress check print-out
-        if not n % 1000:
-            print(n)
+        # if not n % 1000:
+        #     print(n)
         # Add post to list
         fb_posts.append(parse_ct_post(a_post, keywords['COVID_TOPICS'], accounts))
    
@@ -136,11 +136,11 @@ def parse_ct_post(raw_post, topic_dict, account_with_lists):
 #         print(labels)
     except Exception:
         labels = []
-        print("something happened")
+        # print("something happened")
         tb = traceback.format_exc()
-        error_str = 'Facebook fetch failed with error \n{tb}\n for'.format(tb=tb)
+        error_str = '[ct_fetch] fetch failed with error \n{tb}\n for'.format(tb=tb)
         # find if the file was accidentally half-made and delete
-        print(str(error_str) + str(raw_post))
+        print(str(error_str))
     return {
         "author": author,
         "url": raw_post["postUrl"],
@@ -168,7 +168,7 @@ def get_accounts_with_lists(token, lists):
         # Getting ig accounts (for labelling)
     ig_accounts = []
     unique_accounts_by_list = {}
-    print(lists)
+    # print(lists)
     for l in lists:
         listId = str(l['id'])
         listName = l['title']
