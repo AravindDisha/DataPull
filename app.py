@@ -11,6 +11,8 @@ from dateutil.relativedelta import relativedelta
 from pathlib import Path
 import traceback
 import pickle
+# from loguru import logger
+# import time
 # use concurrent.futures to parallelize
 
 home = Path.home()
@@ -20,6 +22,9 @@ path_to_keywords_yaml = "./files/keywords.yaml"
 path_to_exportcomments_keys = './files/exportcomments_keys.yaml'
 path_to_new_extractions = "/PulledData/data_{sm_type}_{from_date}_{to_date}.pkl"
 path_to_pre_comment_extractions = "/PulledData/Raw/data_{sm_type}_{from_date}_{to_date}.pkl"
+
+# # configure logger
+# logger.add("app/static/job.log", format="{time} - {message}")
 
 # path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
 # path_to_pre_comment_extractions = "./Data/Raw/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
@@ -31,6 +36,19 @@ app = Flask(__name__)
 def index():
     print('Request for index page received')
     return render_template('index.html')
+
+# # adjusted flask_logger
+# def flask_logger():
+#     """creates logging information"""
+#     with open("app/static/job.log") as log_info:
+#         for i in range(25): #while semaphore locked
+#             logger.info(f"iteration #{i}") #set off function, lock semaphore till function over
+#             data = log_info.read()
+#             yield data.encode()
+#             time.sleep(1)
+#             #semaphore unlock
+#         # Create empty job.log, old logging will be deleted
+#         open("app/static/job.log", 'w').close()
 
 
 @app.route('/fetch', methods=['POST'])
@@ -60,6 +78,7 @@ def fetch():
             url_for_extraction = url_for('collect_facebook_keyword',start_date=start_date,end_date=end_date)
         elif (extraction_type == 'tweet_location'):
             url_for_extraction = url_for('collect_tweet_location',start_date=start_date,end_date=end_date)
+        # send url for logging instead and move date code and calling extraction code there.
         return render_template('hello.html', etype=extraction_type, sdate=start_date, edate=end_date, url_for_extraction=url_for_extraction)
     else:
         print('Request for extraction invalid -- redirecting')
@@ -189,9 +208,9 @@ def collect_facebook_keyword():
         f = open(path_to_storage_file, 'wb')
         print("Dumping fb data to pkl 1")
         pickle.dump(fb_df, f)
-        print("Initiating fb comment pull")
-        collect_comments_post(fb_df,start_date,end_date)
-        print("Done pulling fb comments")
+        # print("Initiating fb comment pull")
+        # collect_comments_post(fb_df,start_date,end_date)
+        # print("Done pulling fb comments")
         f.close()
     except:
         tb = traceback.format_exc()
