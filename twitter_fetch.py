@@ -1,5 +1,5 @@
 # Import the tweepy package
-from asyncio.windows_events import NULL
+# from asyncio.windows_events import NULL
 import tweepy
 
 # Import a variety of other packages that may be useful for working with data.
@@ -125,11 +125,6 @@ def get_twitter_posts_with_location(location, path_to_keywords_yaml, path_to_twi
     tidy_twi_df['isLocationPulled'] = True
     tidy_twi_df['Location'] = location
     return tidy_twi_df
-
-
-
-
-
 
 
 # If this runs really slowly, implement aho corasick (will make it 40x faster probably)

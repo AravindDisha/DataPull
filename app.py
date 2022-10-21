@@ -11,8 +11,6 @@ from dateutil.relativedelta import relativedelta
 from pathlib import Path
 import traceback
 import pickle
-# from loguru import logger
-# import time
 # use concurrent.futures to parallelize
 
 home = Path.home()
