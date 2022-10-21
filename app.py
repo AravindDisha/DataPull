@@ -37,20 +37,6 @@ def index():
     print('Request for index page received')
     return render_template('index.html')
 
-# # adjusted flask_logger
-# def flask_logger():
-#     """creates logging information"""
-#     with open("app/static/job.log") as log_info:
-#         for i in range(25): #while semaphore locked
-#             logger.info(f"iteration #{i}") #set off function, lock semaphore till function over
-#             data = log_info.read()
-#             yield data.encode()
-#             time.sleep(1)
-#             #semaphore unlock
-#         # Create empty job.log, old logging will be deleted
-#         open("app/static/job.log", 'w').close()
-
-
 @app.route('/fetch', methods=['POST'])
 def fetch():
     print('Request for data fetch received')
@@ -225,6 +211,8 @@ def collect_facebook_keyword():
         print(success_str)
         return '<h3>'+success_str+'</h3><br/>'+(fb_df.sample(5)[["author", "platform", "content"]]).to_html()
 
+# make different api call with date selction 
+# upload extracted and call from last extraction
 def collect_comments_post(sm_df,start_date,end_date):
     # append _comments to the file
     i = 0
