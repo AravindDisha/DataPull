@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import importlib
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for
@@ -11,6 +12,9 @@ from dateutil.relativedelta import relativedelta
 from pathlib import Path
 import traceback
 import pickle
+from os import walk
+import re
+import json
 # use concurrent.futures to parallelize
 
 home = Path.home()
@@ -18,14 +22,12 @@ path_to_ct_keys_yaml = './files/crowdtangle_keys.yaml'
 path_to_twit_keys_yaml = './files/twitter_keys.yaml'
 path_to_keywords_yaml = "./files/keywords.yaml"
 path_to_exportcomments_keys = './files/exportcomments_keys.yaml'
+path_to_data = "/PulledData"
 path_to_new_extractions = "/PulledData/data_{sm_type}_{from_date}_{to_date}.pkl"
-path_to_pre_comment_extractions = "/PulledData/Raw/data_{sm_type}_{from_date}_{to_date}.pkl"
 
-# # configure logger
-# logger.add("app/static/job.log", format="{time} - {message}")
 
-# path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
-# path_to_pre_comment_extractions = "./Data/Raw/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
+path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
+path_to_data = "./Data" # comment this before pushing
 
 app = Flask(__name__)
 
@@ -33,7 +35,54 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     print('Request for index page received')
-    return render_template('index.html')
+    return render_template('index.html',  url_for_list=url_for('get_extracted_list'), url_for_extraction=url_for('collect_comments_post'), url_for_fb_list=url_for('get_facebook_dfs'), url_for_extracted=url_for('get_comment_dfs'))
+
+@app.route('/listExtracted')
+def get_extracted_list():
+    f = []
+    d1 = {'tweet_keyword':[],'insta_post':[],'fb_post':[],'tweet_location':[],'comment_post':[]}
+    for (dirpath, dirnames, filenames) in walk(path_to_data):
+        f.extend(filenames)
+    pat = "[a-zA-Z0-9\.]+"
+    for fname in f:
+        t = re.findall(pat,fname)
+        if('sm' not in t and 'comment' not in t):
+            d1[t[1]+'_'+t[2]].append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+    return json.dumps(d1, indent = 4)
+
+@app.route('/listFacebookDfs')
+def get_facebook_dfs():
+    f = []
+    for (dirpath, dirnames, filenames) in walk(path_to_data):
+        f.extend(filenames)
+    pat = "[a-zA-Z0-9\.]+"
+    l = []
+    for fname in f:
+        t = re.findall(pat,fname)
+        if(t[1] == 'fb'):
+            l.append({'name':datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"), 'value':fname});
+    return json.dumps(l)
+
+@app.route('/listExtractedComments')
+def get_comment_dfs():
+    f = []
+    for (dirpath, dirnames, filenames) in walk(path_to_data):
+        f.extend(filenames)
+    pat = "[a-zA-Z0-9\.]+"
+    l = []
+    for fname in f:
+        t = re.findall(pat,fname)
+        if(t[1] == 'comment'):
+            l.append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+    return 'Extracted comments: \n'+'\n'.join(l)
+
+@app.route('/fetchComments', methods=['POST'])
+def fetch_comment():
+    df_name = request.form.get('df_name')
+    url_for_extraction = url_for('collect_comments_post',df_name=df_name)
+    pat = "[a-zA-Z0-9\.]+"
+    t = re.findall(pat,df_name)
+    return render_template('hello.html', etype='comments', sdate=datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y"), edate=datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"), url_for_extraction=url_for_extraction)
 
 @app.route('/fetch', methods=['POST'])
 def fetch():
@@ -145,18 +194,15 @@ def collect_insta_keyword():
 
     # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
     # naming for file to store extraction from a certain date to a certain date
-    path_to_storage_file = path_to_pre_comment_extractions.format(
+    path_to_storage_file = path_to_new_extractions.format(
         sm_type="insta_post", from_date=start_date.timestamp(), to_date=end_date.timestamp())
     insta_df = None
     try:
         insta_df = get_insta_posts(
             path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_date)
         f = open(path_to_storage_file, 'wb')
-        print("Dumping insta data to pkl 1")
+        print("Dumping insta data to pkl")
         pickle.dump(insta_df, f)
-        print("Initiating insta comment pull")
-        collect_comments_post(insta_df,start_date,end_date)
-        print("Done pulling insta comments")
         f.close()
     except:
         tb = traceback.format_exc()
@@ -183,18 +229,15 @@ def collect_facebook_keyword():
 
     # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
     # naming for file to store extraction from a certain date to a certain date
-    path_to_storage_file = path_to_pre_comment_extractions.format(
+    path_to_storage_file = path_to_new_extractions.format(
         sm_type="fb_post", from_date=start_date.timestamp(), to_date=end_date.timestamp())
     fb_df = None
     try:
         fb_df = get_fb_posts(
             path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_date)
         f = open(path_to_storage_file, 'wb')
-        print("Dumping fb data to pkl 1")
+        print("Dumping fb data to pkl")
         pickle.dump(fb_df, f)
-        # print("Initiating fb comment pull")
-        # collect_comments_post(fb_df,start_date,end_date)
-        # print("Done pulling fb comments")
         f.close()
     except:
         tb = traceback.format_exc()
@@ -211,19 +254,41 @@ def collect_facebook_keyword():
 
 # make different api call with date selction 
 # upload extracted and call from last extraction
-def collect_comments_post(sm_df,start_date,end_date):
+@app.route('/fetchFacebookComments', methods=['GET'])
+def collect_comments_post():
     # append _comments to the file
+    args = request.args
+    fname = args.get('df_name')
+    sm_df = pd.read_pickle(path_to_data+'/'+fname)
+    new_fname2 = path_to_data+'/data_comment_'+fname[fname.find('post'):]
+    df2 = NULL
+    new_fname1 = path_to_data+'/sm_data_'+fname[fname.find('post_')+5:]
+    df1 = NULL
     i = 0
     while i < sm_df.shape[0]:
         print("comment pull number "+str(i))
-        comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+60], path_to_exportcomments_keys)
-        f = open(path_to_pre_comment_extractions.format(sm_type="sm_post_"+str(int(i/60)+1), from_date=start_date.timestamp(), to_date=end_date.timestamp()), 'wb')
-        pickle.dump(comments_output[0],f)
-        f.close()
-        f1 = open(path_to_pre_comment_extractions.format(sm_type="comment_post_"+str(int(i/100)+1), from_date=start_date.timestamp(), to_date=end_date.timestamp()), 'wb')
-        pickle.dump(comments_output[1],f1)
+        comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+5], path_to_exportcomments_keys)
+        if(df1 == NULL):
+            df1 = comments_output[0]
+        else:
+            df1 = df1.append(comments_output[0])
+        f = open(new_fname1, 'wb')
+        pickle.dump(df1,f)
+        print("dumped into file 1")
+        f.close() # update the same file
+        if(df2 == NULL):
+            df2 = comments_output[1]
+        else:
+            df2 = df2.append(comments_output[1])
+        f1 = open(new_fname2, 'wb')
+        pickle.dump(df2,f1)
+        print("dumped into file 2")
         f1.close()
-        i+=60
+        i+=5
+    if(i == sm_df.shape[0]):
+        return 'Successfully extracted to '+new_fname1+' and '+ new_fname2
+    else:
+        return 'Wrote partial data '+str(i)+'/'+str(sm_df.shape[0])+' extracted to '+new_fname1+' and '+ new_fname2
 
 if __name__ == '__main__':
     app.run()

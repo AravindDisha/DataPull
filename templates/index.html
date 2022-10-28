@@ -3,6 +3,57 @@
 <head>
   <title>Request Extraction</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <style>
+    .logging_window {
+      display: block;
+      padding: 9.5px;
+      font-size: 13px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 50%;
+      margin: auto;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      var output = document.getElementById('output');
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '{{ url_for_list }}', true);
+      xhr.send();
+      setInterval(function () {
+        output.innerHTML = xhr.responseText;
+      }, 500);
+
+      var output1 = document.getElementById('output1');
+      var xhr1 = new XMLHttpRequest();
+      xhr1.open('GET', '{{ url_for_extracted }}', true);
+      xhr1.send();
+      setInterval(function () {
+        output1.innerHTML = xhr1.responseText;
+      }, 500);
+
+      fetch('{{ url_for_fb_list }}', {
+        method: "get"
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        let html = '';
+        for (var i = 0; i < data.length; i++) {
+          html += "<option value=" + data[i].value + ">" + data[i].name + "</option>"
+        }
+        document.getElementById("df_name").innerHTML = html;
+      })
+    });
+
+  </script>
 </head>
 <html>
 
@@ -36,6 +87,30 @@
         </div>
       </div>
     </form>
+    <div class="logging_window">
+      <pre id="output"></pre>
+    </div>
+
+    <div class="px-4 py-3 my-2 text-center">
+      <h1 class="display-6 fw-bold text-primary">Comment Extraction</h1>
+    </div>
+    <form method="post" action="{{url_for('fetch_comment')}}" id="comment_extraction_form">
+      <div class="col-md-6 mx-auto text-center">
+        <label for="df_name" class="form-label fw-bold fs-5">Choose file for extraction:</label>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center align-items-center my-1">
+          <select class="form-control" id="df_name" name="df_name" style="max-width: 256px;"
+            form="comment_extraction_form">
+          </select>
+        </div>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+          <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Submit</button>
+        </div>
+      </div>
+    </form>
+    <div class="logging_window">
+      <pre id="output1"></pre>
+    </div>
+
   </main>
 </body>
 
