@@ -27,14 +27,21 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     with open(path_to_ex_keys_yaml) as f:
         ex_keys = yaml.safe_load(f)
     
-    # TODO? -- depending on what data is updated/made
-    # Create column commentCountExported if not already present - with NA values
-    # Continue only with posts where commentCountExported is NA
     # Create newPostID as platform + platform ID
     posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID']
     
-    # Only do FB and IG posts
-    posts_df_fb_ig = posts_df[(posts_df.platform=='facebook') | (posts_df.platform=='instagram')]
+    # Create column commentExportDone if not already present - with False value
+    if 'commentExportDone' not in posts_df:
+        posts_df['commentExportDone'] = False
+    
+    # Only do FB and IG posts, which have not been exported previously
+    posts_df_fb_ig = posts_df[(posts_df.platform=='facebook') | (posts_df.platform=='instagram')][posts_df.commentExportDone!=True]
+    
+    # If no posts eligible for comment export: return
+    if posts_df_fb_ig.shape[0] == 0:
+        print('No eligible FB or IG posts for comment exporting: returning posts_df and empty dataframe comments_df')
+        comments_df = pd.DataFrame()
+        return posts_df, comments_df
     
     # Create comment exports
     comments_exports = create_comment_exports(posts_df_fb_ig, ex_keys)
@@ -70,6 +77,7 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     commentCountExported = comments_df.groupby('newPostID')['commentId'].count().rename('commentCountExported')
     posts_df_comments = posts_df.merge(commentCountExported, left_on='newPostID', right_index=True, how='left')
     posts_df_comments['commentCountExported'] = posts_df_comments.commentCountExported.fillna(0).astype(int)
+    posts_df_comments['commentExportDone'] = True
     
     return posts_df_comments, comments_df
 
