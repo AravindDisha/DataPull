@@ -267,8 +267,7 @@ def collect_comments_post():
     while i < sm_df.shape[0]:
         print("comment pull number "+str(i))
         comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+5], path_to_exportcomments_keys)
-        i+=5
-        if(df1 == None):
+        if(i == 0):
             df1 = comments_output[0]
         else:
             df1 = df1.append(comments_output[0])
@@ -276,7 +275,7 @@ def collect_comments_post():
         pickle.dump(df1,f)
         print("dumped into file 1")
         f.close() # update the same file
-        if(df2 == None):
+        if(i == 0):
             df2 = comments_output[1]
         else:
             df2 = df2.append(comments_output[1])
@@ -284,6 +283,7 @@ def collect_comments_post():
         pickle.dump(df2,f1)
         print("dumped into file 2")
         f1.close()
+        i+=5
     if(i == sm_df.shape[0]):
         return 'Successfully extracted to '+new_fname1+' and '+ new_fname2
     else:
