@@ -161,7 +161,7 @@ def collect_tweet_location():
     # from here - move to a concurrent thread using ThreadPoolExecutor and send output as log. Assign Job IDs?
     # naming for file to store extraction from a certain date to a certain date
     path_to_storage_file = path_to_new_extractions.format(
-        sm_type="tweet_keyword", from_date=start_date.timestamp(), to_date=end_date.timestamp())
+        sm_type="tweet_location", from_date=start_date.timestamp(), to_date=end_date.timestamp())
     twit_df = None
     try:
         twit_df = get_twitter_posts_with_location("atlanta",
