@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import importlib
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for
@@ -26,8 +25,8 @@ path_to_data = "/PulledData"
 path_to_new_extractions = "/PulledData/data_{sm_type}_{from_date}_{to_date}.pkl"
 
 
-path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
-path_to_data = "./Data" # comment this before pushing
+# path_to_new_extractions = "./Data/data_{sm_type}_{from_date}_{to_date}.pkl" # comment this before pushing
+# path_to_data = "./Data" # comment this before pushing
 
 app = Flask(__name__)
 
@@ -261,14 +260,14 @@ def collect_comments_post():
     fname = args.get('df_name')
     sm_df = pd.read_pickle(path_to_data+'/'+fname)
     new_fname2 = path_to_data+'/data_comment_'+fname[fname.find('post'):]
-    df2 = NULL
+    df2 = None
     new_fname1 = path_to_data+'/sm_data_'+fname[fname.find('post_')+5:]
-    df1 = NULL
+    df1 = None
     i = 0
     while i < sm_df.shape[0]:
         print("comment pull number "+str(i))
         comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+5], path_to_exportcomments_keys)
-        if(df1 == NULL):
+        if(df1 == None):
             df1 = comments_output[0]
         else:
             df1 = df1.append(comments_output[0])
@@ -276,7 +275,7 @@ def collect_comments_post():
         pickle.dump(df1,f)
         print("dumped into file 1")
         f.close() # update the same file
-        if(df2 == NULL):
+        if(df2 == None):
             df2 = comments_output[1]
         else:
             df2 = df2.append(comments_output[1])
