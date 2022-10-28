@@ -30,6 +30,8 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     # TODO? -- depending on what data is updated/made
     # Create column commentCountExported if not already present - with NA values
     # Continue only with posts where commentCountExported is NA
+    # Create newPostID as platform + platform ID
+    posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID']
     
     # Only do FB and IG posts
     posts_df_fb_ig = posts_df[(posts_df.platform=='facebook') | (posts_df.platform=='instagram')]
@@ -47,15 +49,15 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     # Create a combined df of comments from all posts,
     # including a var postIndex to keep track of which post it's for:
     dfs = []
-    for i in comments_results:
+    for newPostID in comments_results:
         # Convert comments for the post into a df
-        comment_df = pd.DataFrame(comments_results[i])
+        comment_df = pd.DataFrame(comments_results[newPostID])
 
-        # Add column for post_id
-        comment_df['postIndex'] = i
+        # Add column for newPostID
+        comment_df['newPostID'] = newPostID
 
-        # Move post_id column to the front
-        col = comment_df.pop('postIndex')
+        # Move newPostID column to the front
+        col = comment_df.pop('newPostID')
         comment_df.insert(0, col.name, col)
 
         # Add this df to the list of df's
@@ -65,8 +67,8 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     comments_df = pd.concat(dfs)
     
     # To add to posts_df: Column with count of comments for a post
-    commentCountExported = comments_df.groupby('postIndex')['commentId'].count().rename('commentCountExported')
-    posts_df_comments = posts_df.merge(commentCountExported, left_index=True, right_index=True, how='left')
+    commentCountExported = comments_df.groupby('newPostID')['commentId'].count().rename('commentCountExported')
+    posts_df_comments = posts_df.merge(commentCountExported, left_on='newPostID', right_index=True, how='left')
     posts_df_comments['commentCountExported'] = posts_df_comments.commentCountExported.fillna(0).astype(int)
     
     return posts_df_comments, comments_df
@@ -100,10 +102,13 @@ def create_comment_exports(posts_df, ex_keys):
         # Rate limit for Create the export: "You cannot create more that 20 resources within 3 minutes." = 9 seconds per request
         time.sleep(9)
         
+        # Pull newPostID for the post, for indexing
+        newPostID = post['newPostID']
+        
         # Just for a status update - print for every 50th post's comment fetched
         p = p + 1
         if p % 10 == 0:
-            print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + str(i) + ", time: " + str(time.time() - start))
+            print("[exportcomments_fetch] post #: " + str(p) + ", post index: " + newPostID + ", time: " + str(time.time() - start))        
 
         # While there is no export made yet - try and create the export:
         export_made = False
@@ -117,7 +122,7 @@ def create_comment_exports(posts_df, ex_keys):
 
             # Check API return code for error
             if r_export.body['code'] != 200:
-                print('[exportcomments_fetch] post !200 '+ str(i)) # print post index for debugging
+                print('[exportcomments_fetch] post !200 '+ newPostID) # print post index for debugging
                 # print(post['url']) # print post URL for debugging
                 # print(r_export.body)
                 break
@@ -134,14 +139,14 @@ def create_comment_exports(posts_df, ex_keys):
                     time.sleep(r_export.body['data']['seconds_to_wait'])
                     continue # try again to make export
                 else:
-                    print('[exportcomments_fetch] post unsuccessful post '+ str(i)) # print post index for debugging
+                    print('[exportcomments_fetch] post unsuccessful post '+ newPostID) # print post index for debugging
                     # print(post['url']) # print post URL for debugging
                     # print(r_export.body)
                     break
 
         # Store the export info
         if export_made == True:
-            comments_exports[i] = r_export.body
+            comments_exports[newPostID] = r_export.body
 
     # print()
     print("[exportcomments_fetch] posts gone through:"+ str(len(comments_exports)))
@@ -172,7 +177,7 @@ def get_comment_exports(comments_exports, ex_keys):
     # Initiate posts-processed counter
     p = 0
 
-    for i, r_export in comments_exports.items():
+    for newPostID, r_export in comments_exports.items():
         # Overall rate limit: ExportComments.com limits API usage to 5 requests per second, with any requests thereafter being queued up to a maximum of 5 requests.
         time.sleep(0.2)
         
@@ -191,7 +196,7 @@ def get_comment_exports(comments_exports, ex_keys):
             if export_status == "error":
                 # Print out post export info for debugging, if it's not a "no comments found" situation
                 if not r_check.body['data'][0]['error'].startswith("No comments"):
-                    print("[exportcomments_fetch] no comments for " + str(i)) # print post index for debugging
+                    print("[exportcomments_fetch] no comments for " + newPostID) # print post index for debugging
                     # print(r_export['data']['url']) # print post URL for debugging
                     # print(r_check.body)
                 break
@@ -205,7 +210,7 @@ def get_comment_exports(comments_exports, ex_keys):
             result_f = urllib.request.urlopen(r_result)
             result = result_f.read()
             # Add to results dict
-            comments_results[i] = json.loads(result)
+            comments_results[newPostID] = json.loads(result)
 
     print("[exportcomments_fetch] comment exports gone through:" + str(len(comments_exports)) + ", time taken:" + str(time.time() - start))
     return comments_results
