@@ -82,8 +82,14 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram')), 'commentExportDone'] = True
 
     # To add to posts_df: Add/update column for tracking when comment export was done
-    commentExportedAt = comments_df.groupby('newPostID')['commentExportedAt'].first().rename('commentExportedAt')
-    posts_df = posts_df.merge(commentExportedAt, left_on='newPostID', right_index=True, how='left')
+    # Use comment export createdAt
+    commentExportCreatedAt = pd.DataFrame.from_dict(comments_exports, orient='index').apply(lambda x: x['data']['createdAt'], axis=1).rename('commentExportCreatedAt')
+#     # For posts that did have an export: replace with commentExportedAt
+#     commentExportedAt = comments_df.groupby('newPostID')['commentExportedAt'].first().rename('commentExportedAt')
+#     commentExportedAt = commentExportCreatedAt.replace(commentExportedAt).rename('commentExportedAt')
+    
+    posts_df = posts_df.merge(commentExportCreatedAt, left_on='newPostID', right_index=True, how='left')
+#     posts_df = posts_df.merge(commentExportedAt, left_on='newPostID', right_index=True, how='left')
 #     posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram')), 'commentExportDate'] = datetime.utcnow()
 
     # To add to posts_df: Column with count of comments for a post
