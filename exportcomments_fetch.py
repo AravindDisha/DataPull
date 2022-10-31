@@ -19,7 +19,7 @@ from exportcomments import ExportComments
 
 # Outputs - as a tuple:
 
-# posts_df_comments: Same dataframe of posts inputted, with new/updated column commentCountExported
+# posts_df: Same dataframe of posts inputted, with new/updated column commentExportedAt (when comment export was done in UTC) and commentCountExported
 # comments_df: Dataframe of comments data
 
 def get_post_comments(posts_df, path_to_ex_keys_yaml):
@@ -31,11 +31,12 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID'].astype(str)
     
     # Create column commentExportDone if not already present - with False value
-    if 'commentExportDone' not in posts_df:
-        posts_df['commentExportDone'] = False
+    # Actually -- maybe just keep track of date, so that comment export can be updated
+#     if 'commentExportDone' not in posts_df:
+#         posts_df['commentExportDone'] = False
     
-    # Only do FB and IG posts, which have not been exported previously
-    posts_df_fb_ig = posts_df[(posts_df.platform=='facebook') | (posts_df.platform=='instagram')][posts_df.commentExportDone!=True]
+    # Only do FB and IG posts
+    posts_df_fb_ig = posts_df[(posts_df.platform=='facebook') | (posts_df.platform=='instagram')] #[posts_df.commentExportDone!=True]
     
     # If no posts eligible for comment export: return
     if posts_df_fb_ig.shape[0] == 0:
@@ -77,13 +78,22 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
         print('No comments exported: returning posts_df and empty dataframe comments_df')
         return posts_df, pd.DataFrame()
 
+    # Update boolean for commentExportDone
+    posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram')), 'commentExportDone'] = True
+
+    # To add to posts_df: Add/update column for tracking when comment export was done
+    commentExportedAt = comments_df.groupby('newPostID')['commentExportedAt'].first().rename('commentExportedAt')
+    posts_df = posts_df.merge(commentExportedAt, left_on='newPostID', right_index=True, how='left')
+#     posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram')), 'commentExportDate'] = datetime.utcnow()
+
     # To add to posts_df: Column with count of comments for a post
     commentCountExported = comments_df.groupby('newPostID')['commentId'].count().rename('commentCountExported')
-    posts_df_comments = posts_df.merge(commentCountExported, left_on='newPostID', right_index=True, how='left')
-    posts_df_comments['commentCountExported'] = posts_df_comments.commentCountExported.fillna(0).astype(int)
-    posts_df_comments['commentExportDone'] = True
+    posts_df = posts_df.merge(commentCountExported, left_on='newPostID', right_index=True, how='left')
+    # Replace NAN with 0, to indicate posts that did have comment export attempted (but no comments were there to be exported)
+    posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram')), 'commentCountExported'] = \
+        posts_df.loc[((posts_df.platform=='facebook') | (posts_df.platform=='instagram'))].commentCountExported.fillna(0).astype(int)
     
-    return posts_df_comments, comments_df
+    return posts_df, comments_df
 
 # Inputs:
 
@@ -221,8 +231,14 @@ def get_comment_exports(comments_exports, ex_keys):
             r_result = urllib.request.Request('https://www.exportcomments.com' + r_export['data']['rawUrl'], headers={'User-Agent' : "Magic Browser"}) # header is to avoid 403 error...
             result_f = urllib.request.urlopen(r_result)
             result = result_f.read()
+            result_loaded = json.loads(result)
+
+            # Add exportedAt date/time to each comment's export (in UTC)
+            for c in result_loaded:
+                c['commentExportedAt'] = r_check.body['data'][0]['exportedAt']
+
             # Add to results dict
-            comments_results[newPostID] = json.loads(result)
+            comments_results[newPostID] = result_loaded
 
     print("[exportcomments_fetch] comment exports gone through:" + str(len(comments_exports)) + ", time taken:" + str(time.time() - start))
     return comments_results
