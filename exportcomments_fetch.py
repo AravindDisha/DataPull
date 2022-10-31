@@ -28,7 +28,7 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
         ex_keys = yaml.safe_load(f)
     
     # Create newPostID as platform + platform ID
-    posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID']
+    posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID'].astype(str)
     
     # Create column commentExportDone if not already present - with False value
     if 'commentExportDone' not in posts_df:
