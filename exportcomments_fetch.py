@@ -74,7 +74,8 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
     if(dfs != []):
         comments_df = pd.concat(dfs)
     else:
-        return pd.DataFrame(), pd.DataFrame()
+        print('No comments exported: returning posts_df and empty dataframe comments_df')
+        return posts_df, pd.DataFrame()
 
     # To add to posts_df: Column with count of comments for a post
     commentCountExported = comments_df.groupby('newPostID')['commentId'].count().rename('commentCountExported')
