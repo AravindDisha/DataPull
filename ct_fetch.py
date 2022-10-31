@@ -138,7 +138,7 @@ def parse_ct_post(raw_post, topic_dict, account_with_lists):
         labels = []
         # print("something happened")
         tb = traceback.format_exc()
-        error_str = '[ct_fetch] fetch failed with error \n{tb}\n for'.format(tb=tb)
+        error_str = '[ct_fetch] label fetch failed with error \n{tb}\n for'.format(tb=tb)
         # find if the file was accidentally half-made and delete
         print(str(error_str))
     return {

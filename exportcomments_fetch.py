@@ -71,8 +71,11 @@ def get_post_comments(posts_df, path_to_ex_keys_yaml):
         dfs.append(comment_df)
 
     # Concatenate all df's together
-    comments_df = pd.concat(dfs)
-    
+    if(dfs != []):
+        comments_df = pd.concat(dfs)
+    else:
+        return pd.DataFrame(), pd.DataFrame()
+
     # To add to posts_df: Column with count of comments for a post
     commentCountExported = comments_df.groupby('newPostID')['commentId'].count().rename('commentCountExported')
     posts_df_comments = posts_df.merge(commentCountExported, left_on='newPostID', right_index=True, how='left')

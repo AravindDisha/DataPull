@@ -260,25 +260,28 @@ def collect_comments_post():
     fname = args.get('df_name')
     sm_df = pd.read_pickle(path_to_data+'/'+fname)
     new_fname2 = path_to_data+'/data_comment_'+fname[fname.find('post'):]
-    df2 = None
+    df2 = pd.DataFrame()
     new_fname1 = path_to_data+'/sm_data_'+fname[fname.find('post_')+5:]
-    df1 = None
+    df1 = pd.DataFrame()
     i = 0
     while i < sm_df.shape[0]:
         print("comment pull number "+str(i))
         comments_output = get_post_comments(sm_df[sm_df.platform!='twitter'].iloc[i:i+5], path_to_exportcomments_keys)
         if(i == 0):
             df1 = comments_output[0]
-        else:
-            df1 = df1.append(comments_output[0])
+        elif(comments_output[0].empty != True):
+            df1 = pd.concat([df1,comments_output[0]], axis=0).reset_index(drop=True)
+            print("appended to comment df 1")
         f = open(new_fname1, 'wb')
         pickle.dump(df1,f)
         print("dumped into file 1")
         f.close() # update the same file
         if(i == 0):
             df2 = comments_output[1]
-        else:
-            df2 = df2.append(comments_output[1])
+        elif(comments_output[1].empty != True):
+            df2 = pd.concat([df2,comments_output[1]], axis=0).reset_index(drop=True)
+            print("appended to comment df 2")
+        
         f1 = open(new_fname2, 'wb')
         pickle.dump(df2,f1)
         print("dumped into file 2")
