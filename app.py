@@ -46,7 +46,10 @@ def get_extracted_list():
     for fname in f:
         t = re.findall(pat,fname)
         if('sm' not in t and 'comment' not in t):
-            d1[t[1]+'_'+t[2]].append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+            try:
+                d1[t[1]+'_'+t[2]].append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+            except:
+                print("problem in ",fname)
     return json.dumps(d1, indent = 4)
 
 @app.route('/listFacebookDfs')
@@ -59,7 +62,10 @@ def get_facebook_dfs():
     for fname in f:
         t = re.findall(pat,fname)
         if(t[1] == 'fb'):
-            l.append({'name':datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"), 'value':fname});
+            try:
+                l.append({'name':datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"), 'value':fname});
+            except:
+                print("problem in ",fname)
     return json.dumps(l)
 
 @app.route('/listExtractedComments')
@@ -72,7 +78,10 @@ def get_comment_dfs():
     for fname in f:
         t = re.findall(pat,fname)
         if(t[1] == 'comment'):
-            l.append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+            try: 
+                l.append(datetime.fromtimestamp(float(t[3])).strftime("%d %b, %Y")+" - "+datetime.fromtimestamp(float(t[4][:-4])).strftime("%d %b, %Y"))
+            except:
+                print("problem in ",fname)
     return 'Extracted comments: \n'+'\n'.join(l)
 
 @app.route('/fetchComments', methods=['POST'])
