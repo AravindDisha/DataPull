@@ -7,14 +7,14 @@ import pandas as pd
 import json
 import time
 import yaml
+from envyaml import EnvYAML
 from requests_oauthlib import OAuth1Session
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 def get_twitter_lists(path_to_twit_keys_yaml):
-    with open(path_to_twit_keys_yaml) as f:
-        tw_keys = yaml.safe_load(f)
+    tw_keys = EnvYAML(path_to_twit_keys_yaml)
     twitter = OAuth1Session(tw_keys['get_lists']['consumer_key'],
                             client_secret=tw_keys['get_lists']['consumer_secret'],
                             resource_owner_key=tw_keys['get_lists']['access_token'],
@@ -49,8 +49,7 @@ def get_twitter_lists(path_to_twit_keys_yaml):
     return (tw_df, unique_tw_accounts_by_list)
 
 def initialize_client(path_to_twit_keys_yaml):
-    with open(path_to_twit_keys_yaml, 'r') as file:
-        config = yaml.safe_load(file)
+    config = EnvYAML(path_to_twit_keys_yaml)
 
     my_bearer_token = config["search_tweets_all"]["bearer_token"]
     my_consumer_key = config['get_lists']['consumer_key']

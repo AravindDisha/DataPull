@@ -17,10 +17,10 @@ import json
 # use concurrent.futures to parallelize
 
 home = Path.home()
-path_to_ct_keys_yaml = './files/crowdtangle_keys.yaml'
-path_to_twit_keys_yaml = './files/twitter_keys.yaml'
+path_to_ct_keys_yaml = './files/crowdtangle_keys.yml'
+path_to_twit_keys_yaml = './files/twitter_keys.yml'
 path_to_keywords_yaml = "./files/keywords.yaml"
-path_to_exportcomments_keys = './files/exportcomments_keys.yaml'
+path_to_exportcomments_keys = './files/exportcomments_keys.yml'
 path_to_data = "/PulledData"
 path_to_new_extractions = "/PulledData/data_{sm_type}_{from_date}_{to_date}.pkl"
 

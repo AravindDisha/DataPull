@@ -11,3 +11,4 @@ seaborn>=0.1.0
 tweepy>=4.0.0
 exportcomments>=0.0.1
 loguru>=0.0.1
+envyaml>=0.0.1

@@ -1,5 +1,6 @@
 import pandas as pd
 import yaml
+from envyaml import EnvYAML
 import json
 import numpy as np
 from datetime import datetime
@@ -24,8 +25,7 @@ from exportcomments import ExportComments
 
 def get_post_comments(posts_df, path_to_ex_keys_yaml):
     # SETUP
-    with open(path_to_ex_keys_yaml) as f:
-        ex_keys = yaml.safe_load(f)
+    ex_keys = EnvYAML(path_to_ex_keys_yaml)
     
     # Create newPostID as platform + platform ID
     posts_df['newPostID'] = posts_df['platform'] + "_" + posts_df['platformID'].astype(str)

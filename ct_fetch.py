@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
+from envyaml import EnvYAML
 import numpy as np
 from datetime import datetime
 
@@ -33,8 +34,8 @@ def get_insta_posts(path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end
     with open(path_to_keywords_yaml) as f:
         keywords = yaml.safe_load(f)
     keywords_covid = keywords['COVID_KEYWORDS'] # list of keyword strings
-    with open(path_to_ct_keys_yaml) as f:
-        ct_keys = yaml.safe_load(f)
+    
+    ct_keys = EnvYAML(path_to_ct_keys_yaml)
        
     # Get token
     ig_token = ct_keys['instagram']['token']
@@ -75,8 +76,8 @@ def get_fb_posts(path_to_keywords_yaml, path_to_ct_keys_yaml, start_date, end_da
     with open(path_to_keywords_yaml) as f:
         keywords = yaml.safe_load(f)
     keywords_covid = keywords['COVID_KEYWORDS'] # list of keyword strings
-    with open(path_to_ct_keys_yaml) as f:
-        ct_keys = yaml.safe_load(f)
+    
+    ct_keys = EnvYAML(path_to_ct_keys_yaml)
         
         
     fb_token = ct_keys['facebook']['token']
