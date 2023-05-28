@@ -1,0 +1,4 @@
+exportcomments:
+  token: ${EXPORTCOMMENTS_TOKEN}
+  username: ${EXPORTCOMMENTS_USERNAME}
+  password: ${EXPORTCOMMENTS_PASSWORD}

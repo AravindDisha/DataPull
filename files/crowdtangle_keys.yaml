@@ -1,0 +1,6 @@
+
+facebook:
+  token: ${CROWDTANGLE_FB_TOKEN}
+
+instagram:
+  token: ${CROWDTANGLE_INSTA_TOKEN}
